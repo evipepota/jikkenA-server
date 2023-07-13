@@ -1,7 +1,10 @@
 import json
 
+inputfile = './data/test.json'
+outputfile = './data/test_output.json'
+
 # JSONファイルの読み込み
-with open('test.json', 'r') as f:
+with open(inputfile, 'r') as f:
     data = json.load(f)
 
 # geotagsをdateでソート
@@ -12,5 +15,5 @@ while i < n:
     i += 1
 
 # ソート結果をoutput.jsonに出力
-with open('test_output.json', 'w', encoding='utf-8') as f:
+with open(outputfile, 'w', encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False)
