@@ -2,3 +2,4 @@
 .env
 tag.json
 *.json
+*.csv

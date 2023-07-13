@@ -48,7 +48,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             geotags,
         });
     }
-    let f = File::create("tag.json")?;
+    let f = File::create("./data/tag.json")?;
     let w = BufWriter::new(f);
     serde_json::to_writer(w, &tag_json)?;
     eprintln!("./tag.json has been generated");

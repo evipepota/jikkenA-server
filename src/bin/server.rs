@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(
-                TagJSON::from_path("tag.json")
+                TagJSON::from_path("./data/tag.json")
                     .map_err(ErrorInternalServerError)
                     .unwrap(),
             ))
@@ -44,7 +44,7 @@ async fn handle(
     dbg!(&params.tag);
 
     // 前処理データである tag.json を読み込む
-    // [hint] サーバー起動時に読み込んでそれを再利用すれば良さそう
+    // [hint] サーバー起動時に読み込んでそれを再利用すれば良さそう→した
     // actix_web だと web::Data<T> を使ってデータを保持することができる
     // それをしないと多分 tag.json の load だけでタイムアウトします
     // ref: https://actix.rs/docs/application/#state
@@ -60,6 +60,7 @@ async fn handle(
             break;
         }
     }
+    
 
     // 非常に良くないけど存在するタグしか飛んでこないので unwrap する
     let tag = tag.unwrap();
