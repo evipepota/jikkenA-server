@@ -1,12 +1,12 @@
 use actix_web::{
-    error::ErrorInternalServerError,
     get,
     http::StatusCode,
     web::{self, Query},
     App, HttpResponse, HttpServer,
 };
-use rust::model::{read_csv_to_hashmap, Geotag, TagJSON};
+use rust::model::{read_csv_to_hashmap, Geotag};
 use serde::Deserialize;
+use serde_json::json;
 use std::{collections::HashMap, error::Error, sync::Arc};
 
 const PORT: u16 = 8080;
@@ -14,7 +14,7 @@ const PORT: u16 = 8080;
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     println!("Listening on http://localhost:{}...", PORT);
-    let tag_map = read_csv_to_hashmap("./data/output.csv").unwrap();
+    let tag_map = read_csv_to_hashmap("./data/output2.csv").unwrap();
     let shared_tag_map = Arc::new(tag_map);
     HttpServer::new(move || {
         App::new()
@@ -70,5 +70,5 @@ async fn handle(
     // response
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type("application/json")
-        .json(tag))
+        .json(json!({"tag": params.tag, "results": tag})))
 }
