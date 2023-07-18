@@ -4,7 +4,7 @@ use actix_web::{
     web::{self, Query},
     App, HttpResponse, HttpServer,
 };
-use rust::model::{read_csv_to_hashmap, Geotag};
+use rust::model::{tesat, Geotag};
 use serde::Deserialize;
 use serde_json::json;
 use std::{collections::HashMap, error::Error, sync::Arc};
@@ -14,7 +14,7 @@ const PORT: u16 = 8080;
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     println!("Listening on http://localhost:{}...", PORT);
-    let tag_map = read_csv_to_hashmap("./data/output2.csv").unwrap();
+    let tag_map = tesat();
     let shared_tag_map = Arc::new(tag_map);
     HttpServer::new(move || {
         App::new()
@@ -42,33 +42,24 @@ async fn handle(
     dbg!(&params.tag);
 
     // 前処理データである tag.json を読み込む
-    // [hint] サーバー起動時に読み込んでそれを再利用すれば良さそう→した
+    // [hint] サーバー起動時に読み込んでそれを再利用すれば良さそう
     // actix_web だと web::Data<T> を使ってデータを保持することができる
     // それをしないと多分 tag.json の load だけでタイムアウトします
     // ref: https://actix.rs/docs/application/#state
-    // let tag_json = TagJSON::from_path("tag.json").map_err(ErrorInternalServerError)?;
-    // let tag_json = data;
 
     // tag 名が一致する tag を探索する
     // [hint] これ O(1) でできそう
     let tag = data.get(&params.tag).unwrap();
 
-    /*for t in &tag_json.list {
-        if t.tag_name == params.tag {
-            tag = Some(t);
-            break;
-        }
-    }*/
-
-    // 非常に良くないけど存在するタグしか飛んでこないので unwrap する
-    // let tag = tag.unwrap();
+    // let mut tag = tag.unwrap();
 
     // 日付昇順で並び替え
-    // [hint] これ前処理できそう→した。
+    // [hint] これ前処理できそう
     // tag.geotags.sort_unstable_by(|l, r| l.date.cmp(&r.date));
 
     // response
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type("application/json")
-        .json(json!({"tag": params.tag, "results": tag})))
+        .json(json!({"tag": params.tag,  "results": tag.to_vec()})))
 }
+

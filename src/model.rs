@@ -1,42 +1,61 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::{
     collections::HashMap,
     error::Error,
     fs::File,
-    io::{self, BufRead},
+    io::{BufReader, Read},
     path::Path,
 };
 
-pub fn read_csv_to_hashmap<P: AsRef<Path>>(
-    file_path: P,
-) -> Result<HashMap<String, Vec<Geotag>>, Box<dyn Error>> {
-    let mut tag_map = HashMap::new();
+#[derive(Serialize, Deserialize)]
+pub struct TagJSON {
+    pub list: Vec<TagGeotag>,
+}
 
-    let file = File::open(file_path)?;
-    let reader = io::BufReader::new(file);
-
-    for line in reader.lines() {
-        let line = line?;
-        let fields: Vec<&str> = line.split(',').collect();
-
-        if fields.len() >= 5 {
-            let tagname = fields[0].to_string();
-            let date = fields[1].to_string();
-            let latitude = fields[2].parse::<f64>()?;
-            let longitude = fields[3].parse::<f64>()?;
-            let url = fields[4].to_string();
-
-            let geotag = Geotag {
-                date,
-                lat: latitude,
-                lon: longitude,
-                url,
-            };
-
-            tag_map.entry(tagname).or_insert(vec![]).push(geotag);
-        }
+impl TagJSON {
+    // json を読み込んで TagJSON に unmarshal して返す
+    pub fn from_path<P: AsRef<Path>>(p: P) -> Result<Self, Box<dyn Error>> {
+        let f = File::open(p)?;
+        let r = BufReader::new(f);
+        let tag_json = serde_json::from_reader(r)?;
+        Ok(tag_json)
     }
-    Ok(tag_map)
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct TagData {
+    tag_name: String,
+    geotags: Vec<Geotag>,
+}
+
+pub fn tesat() -> HashMap<String, Vec<Geotag>> {
+    // ファイルを開く
+    let mut file = File::open("./data/output.json").expect("Failed to open file.");
+
+    // ファイルの内容を文字列に読み込む
+    let mut data = String::new();
+    file.read_to_string(&mut data)
+        .expect("Failed to read file.");
+
+    // JSONデータをデシリアライズする
+    let parsed_data: Value = serde_json::from_str(&data).expect("Failed to parse JSON.");
+
+    // "list"キーの値を取得
+    let binding = Vec::new();
+    let list_data = parsed_data["list"].as_array().unwrap_or(&binding);
+
+    // Hashmapを作成
+    let mut tag_map: HashMap<String, Vec<Geotag>> = HashMap::new();
+
+    // タグ名とgeotagsをHashmapに追加
+    for item in list_data {
+        let tag_data: TagData =
+            serde_json::from_value(item.clone()).expect("Failed to deserialize data.");
+
+        tag_map.insert(tag_data.tag_name, tag_data.geotags);
+    }
+    tag_map
 }
 
 // tag.json の struct
@@ -58,7 +77,7 @@ pub struct TagGeotag {
     pub geotags: Vec<Geotag>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Geotag {
     pub date: String,
     pub lat: f64,
