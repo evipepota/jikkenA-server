@@ -3,27 +3,13 @@ use std::{
     collections::HashMap,
     error::Error,
     fs::File,
-    io::{self, BufRead, BufReader},
+    io::{self, BufRead},
     path::Path,
 };
 
-#[derive(Serialize, Deserialize)]
-pub struct TagJSON {
-    pub list: Vec<TagGeotag>,
-}
-
-impl TagJSON {
-    // json を読み込んで TagJSON に unmarshal して返す
-    pub fn from_path<P: AsRef<Path>>(p: P) -> Result<Self, Box<dyn Error>> {
-        let f = File::open(p)?;
-        let r = BufReader::new(f);
-        let tag_json = serde_json::from_reader(r)?;
-        Ok(tag_json)
-    }
-}
-
-
-pub fn read_csv_to_hashmap<P: AsRef<Path>>(file_path: P) -> Result<HashMap<String, Vec<Geotag>>, Box<dyn Error>> {
+pub fn read_csv_to_hashmap<P: AsRef<Path>>(
+    file_path: P,
+) -> Result<HashMap<String, Vec<Geotag>>, Box<dyn Error>> {
     let mut tag_map = HashMap::new();
 
     let file = File::open(file_path)?;
