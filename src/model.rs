@@ -28,8 +28,8 @@ pub fn read_csv_to_hashmap<P: AsRef<Path>>(
 
             let geotag = Geotag {
                 date,
-                latitude,
-                longitude,
+                lat: latitude,
+                lon: longitude,
                 url,
             };
 
@@ -61,7 +61,7 @@ pub struct TagGeotag {
 #[derive(Serialize, Deserialize)]
 pub struct Geotag {
     pub date: String,
-    pub latitude: f64,
-    pub longitude: f64,
+    pub lat: f64,
+    pub lon: f64,
     pub url: String,
 }
