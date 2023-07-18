@@ -2,7 +2,7 @@ import csv
 import json
 
 inputfile = './data/output.json'
-outputfile = './data/output.csv'
+outputfile = './data/output2.csv'
 
 def json_to_csv(json_data):
     # JSONデータを読み込む

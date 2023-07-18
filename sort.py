@@ -1,7 +1,7 @@
 import json
 
-inputfile = './data/test.json'
-outputfile = './data/test_output.json'
+inputfile = './data/tag.json'
+outputfile = './data/output.json'
 
 # JSONファイルの読み込み
 with open(inputfile, 'r') as f:
