@@ -5,22 +5,20 @@ use actix_web::{
     web::{self, Query},
     App, HttpResponse, HttpServer,
 };
-use rust::model::TagJSON;
+use rust::model::{read_csv_to_hashmap, Geotag, TagJSON};
 use serde::Deserialize;
-use std::error::Error;
+use std::{collections::HashMap, error::Error, sync::Arc};
 
 const PORT: u16 = 8080;
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     println!("Listening on http://localhost:{}...", PORT);
+    let tag_map = read_csv_to_hashmap("./data/output.csv").unwrap();
+    let shared_tag_map = Arc::new(tag_map);
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(
-                TagJSON::from_path("./data/tag.json")
-                    .map_err(ErrorInternalServerError)
-                    .unwrap(),
-            ))
+            .app_data(web::Data::new(shared_tag_map.clone()))
             .service(handle)
     })
     .bind(("0.0.0.0", PORT))?
@@ -39,7 +37,7 @@ struct GetParameter {
 #[get("/")]
 async fn handle(
     params: Query<GetParameter>, // http://example.com?tag=hoge の hoge が入ってる
-    data: web::Data<TagJSON>,
+    data: web::Data<Arc<HashMap<String, Vec<Geotag>>>>,
 ) -> Result<HttpResponse, actix_web::Error> {
     dbg!(&params.tag);
 
@@ -49,21 +47,21 @@ async fn handle(
     // それをしないと多分 tag.json の load だけでタイムアウトします
     // ref: https://actix.rs/docs/application/#state
     // let tag_json = TagJSON::from_path("tag.json").map_err(ErrorInternalServerError)?;
-    let tag_json = data;
+    // let tag_json = data;
 
     // tag 名が一致する tag を探索する
     // [hint] これ O(1) でできそう
-    let mut tag = None;
-    for t in &tag_json.list {
+    let tag = data.get(&params.tag).unwrap();
+
+    /*for t in &tag_json.list {
         if t.tag_name == params.tag {
             tag = Some(t);
             break;
         }
-    }
-    
+    }*/
 
     // 非常に良くないけど存在するタグしか飛んでこないので unwrap する
-    let tag = tag.unwrap();
+    // let tag = tag.unwrap();
 
     // 日付昇順で並び替え
     // [hint] これ前処理できそう→した。
@@ -72,5 +70,5 @@ async fn handle(
     // response
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type("application/json")
-        .json(&tag.geotags))
+        .json(tag))
 }

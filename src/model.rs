@@ -1,5 +1,11 @@
 use serde::{Deserialize, Serialize};
-use std::{error::Error, fs::File, io::BufReader, path::Path};
+use std::{
+    collections::HashMap,
+    error::Error,
+    fs::File,
+    io::{self, BufRead, BufReader},
+    path::Path,
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct TagJSON {
@@ -14,6 +20,37 @@ impl TagJSON {
         let tag_json = serde_json::from_reader(r)?;
         Ok(tag_json)
     }
+}
+
+
+pub fn read_csv_to_hashmap<P: AsRef<Path>>(file_path: P) -> Result<HashMap<String, Vec<Geotag>>, Box<dyn Error>> {
+    let mut tag_map = HashMap::new();
+
+    let file = File::open(file_path)?;
+    let reader = io::BufReader::new(file);
+
+    for line in reader.lines() {
+        let line = line?;
+        let fields: Vec<&str> = line.split(',').collect();
+
+        if fields.len() >= 5 {
+            let tagname = fields[0].to_string();
+            let date = fields[1].to_string();
+            let latitude = fields[2].parse::<f64>()?;
+            let longitude = fields[3].parse::<f64>()?;
+            let url = fields[4].to_string();
+
+            let geotag = Geotag {
+                date,
+                latitude,
+                longitude,
+                url,
+            };
+
+            tag_map.entry(tagname).or_insert(vec![]).push(geotag);
+        }
+    }
+    Ok(tag_map)
 }
 
 // tag.json の struct
