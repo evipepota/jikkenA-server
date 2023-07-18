@@ -11,7 +11,10 @@ with open(inputfile, 'r') as f:
 n = len(data['list'])
 i = 0
 while i < n:
-    data['list'][i]['geotags'] = sorted(data['list'][i]['geotags'], key=lambda x: x['date'])
+    data['list'][i]['geotags'] = sorted(
+        data['list'][i]['geotags'], key=lambda x: x['date'], reverse=True)
+    if len(data['list'][i]['geotags']) > 100:
+        data['list'][i]['geotags'] = data['list'][i]['geotags'][:100]
     i += 1
 
 # ソート結果をoutput.jsonに出力
