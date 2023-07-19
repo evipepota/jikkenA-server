@@ -13,9 +13,9 @@ const PORT: u16 = 8080;
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    println!("Listening on http://localhost:{}...", PORT);
     let tag_map = tesat();
     let shared_tag_map = Arc::new(tag_map);
+    println!("Listening on http://localhost:{}...", PORT);
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(shared_tag_map.clone()))
