@@ -1,7 +1,7 @@
 import csv
 import json
 
-inputfile = './data/output.json'
+inputfile = './data/output2.json'
 outputfile = './data/output.csv'
 
 def json_to_csv(json_data):
