@@ -79,6 +79,14 @@ pub struct TagGeotag {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Geotag {
+    pub date: i32,
+    pub lat: f64,
+    pub lon: f64,
+    pub url: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GeotagReal {
     pub date: String,
     pub lat: f64,
     pub lon: f64,

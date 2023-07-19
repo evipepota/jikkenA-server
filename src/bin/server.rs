@@ -4,7 +4,8 @@ use actix_web::{
     web::{self, Query},
     App, HttpResponse, HttpServer,
 };
-use rust::model::{tesat, Geotag};
+use chrono::{NaiveDateTime, TimeZone, Timelike, Utc};
+use rust::model::{tesat, Geotag, GeotagReal};
 use serde::Deserialize;
 use serde_json::json;
 use std::{collections::HashMap, error::Error, sync::Arc};
@@ -37,34 +38,32 @@ struct GetParameter {
 // GET http://localhost:8080/?tag=hoge で動く
 #[get("/")]
 async fn handle(
-    params: Query<GetParameter>, // http://example.com?tag=hoge の hoge が入ってる
+    params: Query<GetParameter>,
     data: web::Data<Arc<HashMap<String, Vec<Geotag>>>>,
 ) -> Result<HttpResponse, actix_web::Error> {
     dbg!(&params.tag);
 
-    // 前処理データである tag.json を読み込む
-    // [hint] サーバー起動時に読み込んでそれを再利用すれば良さそう
-    // actix_web だと web::Data<T> を使ってデータを保持することができる
-    // それをしないと多分 tag.json の load だけでタイムアウトします
-    // ref: https://actix.rs/docs/application/#state
-
-    // tag 名が一致する tag を探索する
-    // [hint] これ O(1) でできそう
-    
     let tag = data.get(&params.tag).unwrap();
-    let modified_tag: Vec<Geotag> = tag
-    .iter()
-    .map(|geotag| Geotag {
-        date: geotag.date.clone(),
-        lat: geotag.lat,
-        lon: geotag.lon,
-        url: format!("http://farm9.static.flickr.com/{}.jpg", geotag.url),
-    })
-    .collect();
+    let modified_tag: Vec<GeotagReal> = tag
+        .iter()
+        .map(|geotag| GeotagReal {
+            date: Utc
+                .timestamp(geotag.date.into(), 0)
+                .with_timezone(&chrono::Local)
+                .format("%Y-%m-%d %H:%M:%S")
+                .to_string(),
+            lat: geotag.lat,
+            lon: geotag.lon,
+            url: format!(
+                "http://farm{}.static.flickr.com/{}.jpg",
+                &geotag.url[0..1],
+                &geotag.url[1..]
+            ),
+        })
+        .collect();
 
     // response
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type("application/json")
         .json(json!({"tag": params.tag,  "results": modified_tag})))
 }
-

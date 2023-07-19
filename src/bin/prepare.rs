@@ -1,7 +1,7 @@
 use std::{collections::HashMap, error::Error, fs::File, io::BufWriter};
 
 use csv::ReaderBuilder;
-use rust::model::{Geotag, TagGeotag, TagJSON};
+use rust::model::{Geotag, TagGeotag, TagJSON, GeotagReal};
 
 fn main() -> Result<(), Box<dyn Error>> {
     eprintln!("loading ../csv/tag.csv ...");
