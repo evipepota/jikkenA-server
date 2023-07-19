@@ -2,14 +2,11 @@ import csv
 import json
 
 inputfile = './data/output.json'
-outputfile = './data/output2.csv'
+outputfile = './data/output.csv'
 
 def json_to_csv(json_data):
     # JSONデータを読み込む
     data = json.loads(json_data)
-    
-    # CSVファイルのヘッダー
-    header = ['tagname', 'date', 'latitude', 'longitude', 'url']
     
     # CSVファイルのデータ行
     rows = []
@@ -19,8 +16,8 @@ def json_to_csv(json_data):
         tagname = item['tag_name']
         for geotag in item['geotags']:
             date = geotag['date']
-            latitude = geotag['latitude']
-            longitude = geotag['longitude']
+            latitude = geotag['lat']
+            longitude = geotag['lon']
             url = geotag['url']
             rows.append([tagname, date, latitude, longitude, url])
     
