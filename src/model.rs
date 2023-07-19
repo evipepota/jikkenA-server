@@ -31,7 +31,7 @@ pub struct TagData {
 
 pub fn tesat() -> HashMap<String, Vec<Geotag>> {
     // ファイルを開く
-    let mut file = File::open("./data/output.json").expect("Failed to open file.");
+    let mut file = File::open("./data/output2.json").expect("Failed to open file.");
 
     // ファイルの内容を文字列に読み込む
     let mut data = String::new();

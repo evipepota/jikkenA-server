@@ -14,6 +14,7 @@ const PORT: u16 = 8080;
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let tag_map = tesat();
+    println!("hash insert done!");
     let shared_tag_map = Arc::new(tag_map);
     println!("Listening on http://localhost:{}...", PORT);
     HttpServer::new(move || {
@@ -49,17 +50,21 @@ async fn handle(
 
     // tag 名が一致する tag を探索する
     // [hint] これ O(1) でできそう
+    
     let tag = data.get(&params.tag).unwrap();
-
-    // let mut tag = tag.unwrap();
-
-    // 日付昇順で並び替え
-    // [hint] これ前処理できそう
-    // tag.geotags.sort_unstable_by(|l, r| l.date.cmp(&r.date));
+    let modified_tag: Vec<Geotag> = tag
+    .iter()
+    .map(|geotag| Geotag {
+        date: geotag.date.clone(),
+        lat: geotag.lat,
+        lon: geotag.lon,
+        url: format!("http://farm9.static.flickr.com/{}.jpg", geotag.url),
+    })
+    .collect();
 
     // response
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type("application/json")
-        .json(json!({"tag": params.tag,  "results": tag.to_vec()})))
+        .json(json!({"tag": params.tag,  "results": modified_tag})))
 }
 
