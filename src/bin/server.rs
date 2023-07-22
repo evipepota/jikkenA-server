@@ -6,11 +6,13 @@ use actix_web::{
 };
 use chrono::{TimeZone, Utc};
 use rust::model::{read_csv_to_hashmap, Geotag, GeotagReal};
+use rustc_hash::FxHasher;
 use serde::Deserialize;
 use serde_json::json;
-use std::{collections::HashMap, error::Error, sync::Arc};
+use std::{collections::HashMap, error::Error, sync::Arc, hash::BuildHasherDefault};
 use rayon::prelude::*;
 
+type Hasher = BuildHasherDefault<FxHasher>;
 const PORT: u16 = 8080;
 
 #[actix_web::main]
@@ -39,7 +41,7 @@ struct GetParameter {
 #[get("/")]
 async fn handle(
     params: Query<GetParameter>,
-    data: web::Data<Arc<HashMap<String, Vec<Geotag>>>>,
+    data: web::Data<Arc<HashMap<String, Vec<Geotag>, Hasher>>>,
 ) -> Result<HttpResponse, actix_web::Error> {
     dbg!(&params.tag);
 
