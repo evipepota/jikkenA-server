@@ -5,12 +5,12 @@ use actix_web::{
     App, HttpResponse, HttpServer,
 };
 use chrono::{TimeZone, Utc};
+use rayon::prelude::*;
 use rust::model::{read_csv_to_hashmap, Geotag, GeotagReal};
 use rustc_hash::FxHasher;
 use serde::Deserialize;
 use serde_json::json;
-use std::{collections::HashMap, error::Error, sync::Arc, hash::BuildHasherDefault};
-use rayon::prelude::*;
+use std::{collections::HashMap, error::Error, hash::BuildHasherDefault, sync::Arc};
 
 type Hasher = BuildHasherDefault<FxHasher>;
 const PORT: u16 = 8080;
@@ -50,7 +50,9 @@ async fn handle(
         .par_iter()
         .map(|geotag| GeotagReal {
             date: Utc
-                .timestamp(geotag.date.into(), 0)
+                .timestamp_opt(geotag.date.into(), 0)
+                .single()
+                .unwrap()
                 .with_timezone(&chrono::Local)
                 .format("%Y-%m-%d %H:%M:%S")
                 .to_string(),

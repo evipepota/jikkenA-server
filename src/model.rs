@@ -5,7 +5,7 @@ use std::{
     error::Error,
     fs::File,
     hash::BuildHasherDefault,
-    io::{self, BufRead, BufReader},
+    io::{self, BufRead},
     path::Path,
 };
 
@@ -14,16 +14,6 @@ type Hasher = BuildHasherDefault<FxHasher>;
 #[derive(Serialize, Deserialize)]
 pub struct TagJSON {
     pub list: Vec<TagGeotag>,
-}
-
-impl TagJSON {
-    // json を読み込んで TagJSON に unmarshal して返す
-    pub fn from_path<P: AsRef<Path>>(p: P) -> Result<Self, Box<dyn Error>> {
-        let f = File::open(p)?;
-        let r = BufReader::new(f);
-        let tag_json = serde_json::from_reader(r)?;
-        Ok(tag_json)
-    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
