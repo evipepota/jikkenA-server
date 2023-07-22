@@ -4,8 +4,8 @@ use actix_web::{
     web::{self, Query},
     App, HttpResponse, HttpServer,
 };
-use chrono::{NaiveDateTime, TimeZone, Timelike, Utc};
-use rust::model::{tesat, Geotag, GeotagReal};
+use chrono::{TimeZone, Utc};
+use rust::model::{read_csv_to_hashmap, Geotag, GeotagReal};
 use serde::Deserialize;
 use serde_json::json;
 use std::{collections::HashMap, error::Error, sync::Arc};
@@ -14,8 +14,7 @@ const PORT: u16 = 8080;
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let tag_map = tesat();
-    println!("hash insert done!");
+    let tag_map = read_csv_to_hashmap("./data/output.csv").unwrap();
     let shared_tag_map = Arc::new(tag_map);
     println!("Listening on http://localhost:{}...", PORT);
     HttpServer::new(move || {
