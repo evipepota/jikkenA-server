@@ -9,6 +9,7 @@ use rust::model::{read_csv_to_hashmap, Geotag, GeotagReal};
 use serde::Deserialize;
 use serde_json::json;
 use std::{collections::HashMap, error::Error, sync::Arc};
+use rayon::prelude::*;
 
 const PORT: u16 = 8080;
 
@@ -44,7 +45,7 @@ async fn handle(
 
     let tag = data.get(&params.tag).unwrap();
     let modified_tag: Vec<GeotagReal> = tag
-        .iter()
+        .par_iter()
         .map(|geotag| GeotagReal {
             date: Utc
                 .timestamp(geotag.date.into(), 0)
