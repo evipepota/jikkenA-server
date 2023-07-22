@@ -1,12 +1,15 @@
+use rustc_hash::FxHasher;
 use serde::{Deserialize, Serialize};
-
 use std::{
     collections::HashMap,
     error::Error,
     fs::File,
-    io::{BufReader, self, BufRead},
+    hash::BuildHasherDefault,
+    io::{self, BufRead, BufReader},
     path::Path,
 };
+
+type Hasher = BuildHasherDefault<FxHasher>;
 
 #[derive(Serialize, Deserialize)]
 pub struct TagJSON {
@@ -29,8 +32,10 @@ pub struct TagData {
     geotags: Vec<Geotag>,
 }
 
-pub fn read_csv_to_hashmap<P: AsRef<Path>>(file_path: P) -> Result<HashMap<String, Vec<Geotag>>, Box<dyn Error>> {
-    let mut tag_map = HashMap::new();
+pub fn read_csv_to_hashmap<P: AsRef<Path>>(
+    file_path: P,
+) -> Result<HashMap<String, Vec<Geotag>, Hasher>, Box<dyn Error>> {
+    let mut tag_map: HashMap<String, Vec<Geotag>, Hasher> = HashMap::default();
 
     let file = File::open(file_path)?;
     let reader = io::BufReader::new(file);
